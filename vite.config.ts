@@ -1,6 +1,8 @@
-import { defineConfig } from "vite";
+import type { UserConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
+export default {
+  plugins: [tsconfigPaths()],
   build: {
     outDir: "dist",
     lib: {
@@ -18,4 +20,4 @@ export default defineConfig({
       },
     },
   },
-});
+} satisfies UserConfig;
