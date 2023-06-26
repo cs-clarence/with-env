@@ -1,0 +1,6 @@
+{
+  "extends": ["./node_modules/@rencedm112/tsconfig/bundler.json"],
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}
