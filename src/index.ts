@@ -3,6 +3,10 @@ import fs from "node:fs";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import childProcess from "node:child_process";
+import { Command } from "@commander-js/extra-typings";
+import figlet from "figlet";
+
+const ASCII_ART = figlet.textSync("WITH-ENV");
 
 const CWD = process.cwd();
 
@@ -51,17 +55,43 @@ function loadEnvFiles(envFiles: string[]): Record<string, string> {
   return result.parsed ?? {};
 }
 
-Object.assign(process.env, loadEnvFiles(getEnvFiles(CWD)));
+const program = new Command();
 
-const proc = process.argv.slice(2);
-const command = proc[0];
-const args = proc.slice(1);
+program
+  .name("\n" + ASCII_ART + "\n")
+  .description("Run a command with .env files loaded")
+  .version("0.0.3", "-v, --version", "output the current version");
 
-if (!command) {
-  throw new Error(`Command ${command} not found`);
-}
+program
+  .argument("<cmd...>")
+  .option("-d, --debug", "output extra debugging logs", false)
+  .action((cmd, opts) => {
+    const envFiles = getEnvFiles(CWD);
 
-childProcess.spawnSync(command, args, {
-  env: process.env,
-  stdio: "inherit",
-});
+    const env = loadEnvFiles(envFiles);
+
+    if (opts.debug) {
+      console.log("Loaded env files: ");
+      for (const file of envFiles) {
+        console.log(file);
+      }
+
+      console.log("env parsed: ", env);
+    }
+
+    Object.assign(process.env, env);
+
+    const command = cmd[0];
+    const args = cmd.slice(1);
+
+    if (!command) {
+      throw new Error("No command supplied");
+    }
+
+    childProcess.spawnSync(command, args, {
+      env: process.env,
+      stdio: "inherit",
+    });
+  });
+
+program.parse(process.argv);

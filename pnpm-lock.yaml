@@ -5,12 +5,21 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@commander-js/extra-typings':
+    specifier: ^11.0.0
+    version: 11.0.0(commander@11.0.0)
+  commander:
+    specifier: ^11.0.0
+    version: 11.0.0
   dotenv:
     specifier: ^16.3.1
     version: 16.3.1
   dotenv-expand:
     specifier: ^10.0.0
     version: 10.0.0
+  figlet:
+    specifier: ^1.6.0
+    version: 1.6.0
 
 devDependencies:
   '@rencedm112/eslint-config':
@@ -22,6 +31,9 @@ devDependencies:
   '@rencedm112/tsconfig':
     specifier: ^3.0.5
     version: 3.0.5(typescript@5.1.3)
+  '@types/figlet':
+    specifier: ^1.5.6
+    version: 1.5.6
   '@types/node':
     specifier: ^20.3.1
     version: 20.3.1
@@ -58,6 +70,14 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@commander-js/extra-typings@11.0.0(commander@11.0.0):
+    resolution: {integrity: sha512-06ol6Kn5gPjFY6v0vWOZ84nQwyqhZdaeZCHYH3vhwewjpOEjniF1KHZxh18887G3poWiJ8qyq5pb6ANuiddfPQ==}
+    peerDependencies:
+      commander: 11.0.x
+    dependencies:
+      commander: 11.0.0
+    dev: false
 
   /@esbuild/android-arm64@0.17.19:
     resolution: {integrity: sha512-KBMWvEZooR7+kzY0BtbTQn0OAYY7CsiydT63pVEaPtVYF0hXbUaOyZog37DKxK7NF3XacBJOpYT4adIJh+avxA==}
@@ -511,6 +531,10 @@ packages:
       minimatch: 9.0.2
     dev: true
 
+  /@types/figlet@1.5.6:
+    resolution: {integrity: sha512-AOdn9cKJGXpqfHeif16xeGMwWefB4nsOyxkdRMpc+PEP3nUxzu3psJfIqhjrCNW4Sejt5i6rISWmEwK0sw03mA==}
+    dev: true
+
   /@types/http-cache-semantics@4.0.1:
     resolution: {integrity: sha512-SZs7ekbP8CN0txVG2xVRH6EgKmEm31BOxA07vkFaETzZz1xh+cbt8BcI0slpymvwhx5dlFnQG2rTlPVQn+iRPQ==}
     dev: true
@@ -923,6 +947,11 @@ packages:
     engines: {node: '>=14'}
     dev: true
 
+  /commander@11.0.0:
+    resolution: {integrity: sha512-9HMlXtt/BNoYr8ooyjjNRdIilOTkVJXB+GhxMTtOKwk0R4j4lS4NpjuqmRxroBfnfTSHQIHQB7wryHhXarNjmQ==}
+    engines: {node: '>=16'}
+    dev: false
+
   /concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
     dev: true
@@ -1259,6 +1288,12 @@ packages:
     dependencies:
       reusify: 1.0.4
     dev: true
+
+  /figlet@1.6.0:
+    resolution: {integrity: sha512-31EQGhCEITv6+hi2ORRPyn3bulaV9Fl4xOdR169cBzH/n1UqcxsiSB/noo6SJdD7Kfb1Ljit+IgR1USvF/XbdA==}
+    engines: {node: '>= 0.4.0'}
+    hasBin: true
+    dev: false
 
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
