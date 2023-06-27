@@ -1,24 +1,21 @@
 import type { UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { builtinModules } from "module";
+
+const coreModules = builtinModules.flatMap((name) => [name, `node:${name}`]);
 
 export default {
   plugins: [tsconfigPaths()],
   optimizeDeps: {},
   build: {
+    target: ["node20"],
     outDir: "dist",
     rollupOptions: {
-      external: [
-        "os",
-        "path",
-        "crypto",
-        "node:child_process",
-        "node:path",
-        "node:fs",
-      ],
+      external: [...coreModules],
     },
     lib: {
       entry: "./src/index.ts",
-      formats: ["es", "cjs"],
+      formats: ["cjs"],
       fileName: (format) => {
         if (format === "es") {
           return "index.js";

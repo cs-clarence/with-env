@@ -1,12 +1,9 @@
-import path from "node:path";
-import fs from "node:fs";
+import path from "path";
+import fs from "fs";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-import childProcess from "node:child_process";
+import childProcess from "child_process";
 import { Command } from "@commander-js/extra-typings";
-import figlet from "figlet";
-
-const ASCII_ART = figlet.textSync("WITH-ENV");
 
 const CWD = process.cwd();
 
@@ -58,7 +55,7 @@ function loadEnvFiles(envFiles: string[]): Record<string, string> {
 const program = new Command();
 
 program
-  .name("\n" + ASCII_ART + "\n")
+  .name("WITH-ENV")
   .description("Run a command with .env files loaded")
   .version("0.0.3", "-v, --version", "output the current version");
 
