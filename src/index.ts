@@ -10,7 +10,12 @@ const CWD = process.cwd();
 function getEnvFiles(cwd: string): string[] {
   const envFilesQueue = [] as string[];
   const NODE_ENV = process.env.NODE_ENV ?? "development";
-  const loadOrder = [`.env.${NODE_ENV}.local`, `.env.${NODE_ENV}`, ".env"];
+  const loadOrder = [
+    `.env.${NODE_ENV}.local`,
+    ".env.local",
+    `.env.${NODE_ENV}`,
+    ".env",
+  ];
   let inRoot = false;
   let searchPath: string | null = cwd;
 
