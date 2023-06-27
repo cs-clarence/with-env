@@ -19,15 +19,16 @@ export default {
     lib: {
       entry: "./src/index.ts",
       formats: ["es", "cjs"],
-      fileName(file, format) {
+      fileName: (format) => {
         if (format === "es") {
-          return `${file}.es.js`;
-        }
-        if (format === "cjs") {
-          return `${file}.cjs.js`;
+          return "index.js";
         }
 
-        return `${file}.js`;
+        if (format === "cjs") {
+          return "index.cjs";
+        }
+
+        return `index.${format}.js`;
       },
     },
   },
