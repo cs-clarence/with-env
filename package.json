@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "build": "vite build",
-    "publish-package": "pnpm publish --access public"
+    "publish-package": "pnpm publish --access public",
+    "build-publish": "pnpm run build && pnpm run publish-package"
   },
   "keywords": [],
   "author": "",
