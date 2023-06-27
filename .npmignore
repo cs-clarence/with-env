@@ -1,2 +1,5 @@
-!dist
-!package.json
+src
+vite.config.ts
+tsconfig.json
+prettier.config.cjs
+.eslintrc.cjs
