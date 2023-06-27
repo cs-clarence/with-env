@@ -68,6 +68,7 @@ program
     const env = loadEnvFiles(envFiles);
 
     if (opts.debug) {
+      console.log("CWD: ", CWD);
       console.log("Loaded env files: ");
       for (const file of envFiles) {
         console.log(file);
