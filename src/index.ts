@@ -13,34 +13,54 @@ const ENV =
   process.env.NODE_ENV ??
   "development";
 
+const FILE_LOAD_ORDER = defaultFileLoadOrder(ENV) as unknown as string[];
+const ROOT_FILE_NAME = ".root";
+
+function defaultFileLoadOrder<T extends string = string>(env: T) {
+  return [".env", `.env.${env}`, ".env.local", `.env.${env}.local`] as const;
+}
+
 function getEnvFiles(
   cwd: string,
-  options: { cascade: boolean; findFromAncestorDirs: boolean } = {
-    cascade: true,
-    findFromAncestorDirs: true,
-  },
+  options?: Readonly<{
+    findFromAncestorDirs?: boolean;
+    env?: string;
+    fileNames?: string[];
+    searchPath?: string;
+    limitToProjectRoot?: boolean;
+    rootFileName?: string;
+  }>,
 ): string[] {
   const envFilesQueue = [] as string[];
-  const loadOrder = [`.env.${ENV}.local`, ".env.local", `.env.${ENV}`, ".env"];
   let inRoot = false;
-  let searchPath: string | null = cwd;
+  const findFromAncestorDirs = options?.findFromAncestorDirs ?? true;
+  const env = options?.env ?? ENV;
+  const fileNames = options?.fileNames ?? [];
+  const files = fileNames.length !== 0 ? fileNames : defaultFileLoadOrder(env);
+  const rootFileName = options?.rootFileName ?? ROOT_FILE_NAME;
+  const limitToProjectRoot = options?.limitToProjectRoot ?? true;
+
+  let searchPath: string | null = options?.searchPath ?? cwd;
 
   while (!inRoot) {
-    if (searchPath === "/") {
+    if (
+      searchPath === "/" ||
+      (limitToProjectRoot && fs.existsSync(path.join(searchPath, rootFileName)))
+    ) {
       inRoot = true;
     }
 
-    for (const envFileName of loadOrder) {
-      const filePath = inRoot
-        ? `${searchPath}${envFileName}`
-        : `${searchPath}/${envFileName}`;
+    for (const envFileName of files) {
+      const filePath = path.join(searchPath, envFileName);
+
+      if (import.meta.env.DEV) {
+        console.log("Searching for env file: ", filePath);
+      }
+
       if (fs.existsSync(filePath)) {
         envFilesQueue.push(filePath);
-        if (!options.cascade) {
-          break;
-        }
 
-        if (!options.findFromAncestorDirs) {
+        if (findFromAncestorDirs) {
           return envFilesQueue;
         }
       }
@@ -52,13 +72,22 @@ function getEnvFiles(
   return envFilesQueue;
 }
 
-function loadEnvFiles(envFiles: string[]): Record<string, string> {
+function loadEnvFiles(
+  envFiles: string[],
+  options: { cascade: boolean } = { cascade: true },
+): Record<string, string> {
   const env = {} as Record<string, string>;
 
   for (const file of envFiles.reverse()) {
     const buff = fs.readFileSync(file);
 
-    Object.assign(env, dotenv.parse(buff));
+    const parsed = dotenv.parse(buff);
+
+    for (const [key, value] of Object.entries(parsed)) {
+      if (!env[key] || options.cascade) {
+        env[key] = value;
+      }
+    }
   }
 
   const result = dotenvExpand.expand({ parsed: env });
@@ -81,14 +110,39 @@ program
   .argument("<cmd...>")
   .option("-d, --debug", "output extra debugging logs", false)
   .option(
+    "-e, --env <env>",
+    "override environment name (it uses environmental variables ENVIRONMENT or ENV or NODE_ENV or the string 'development' by default)",
+    ENV,
+  )
+  .option(
     "-c, --cascade",
-    "cascade env variables following the order .env, env.${environment}.local, .env.local, and env.${environment}.local",
+    `cascade env variables following the order: ${FILE_LOAD_ORDER.join(
+      ",",
+    )}, the variables in the later file override the previous ones`,
     true,
   )
   .option(
-    "-C, --no-cascade",
-    "don't cascade env variables following the order .env, env.${environment}.local, .env.local, and env.${environment}.local",
+    "-r, --root-file-name <rootFileName>",
+    "root file name",
+    ROOT_FILE_NAME,
   )
+  .option(
+    "-l, --limit-to-project-root",
+    `limit the ancestor search to the directory containing the project root file (${ROOT_FILE_NAME}, overrideable with -r flag)`,
+    true,
+  )
+  .option(
+    "-L, --no-limit-to-project-root",
+    "ignore the project root file and search for .env files in all ancestor directories",
+    true,
+  )
+  .option("-p, --path <path>", "path to find .env files", CWD)
+  .option(
+    "-f, --file-names <filenames...>",
+    "override the names of the env files to load, cascade will apply if enabled",
+    [],
+  )
+  .option("-C, --no-cascade", "don't cascade env variables")
   .option(
     "-a, --ancestors-dirs",
     "find .env files in ancestor directories",
@@ -106,11 +160,15 @@ program
     }
 
     const envFiles = getEnvFiles(CWD, {
-      cascade: opts.cascade,
       findFromAncestorDirs: opts.ancestorsDirs,
+      env: opts.env,
+      searchPath: opts.path,
+      fileNames: opts.fileNames,
+      rootFileName: opts.rootFileName,
+      limitToProjectRoot: opts.limitToProjectRoot,
     });
 
-    const env = loadEnvFiles(envFiles);
+    const env = loadEnvFiles(envFiles, opts);
 
     if (opts.debug) {
       console.log("CWD: ", CWD);
@@ -122,7 +180,11 @@ program
       console.log("Env parsed: ", env);
     }
 
-    Object.assign(process.env, env);
+    for (const [key, value] of Object.entries(env)) {
+      if (!env[key] || opts.cascade) {
+        process.env[key] = value;
+      }
+    }
 
     const command = cmd[0];
     const args = cmd.slice(1);
