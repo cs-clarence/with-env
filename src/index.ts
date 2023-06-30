@@ -4,18 +4,24 @@ import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import childProcess from "child_process";
 import { Command } from "@commander-js/extra-typings";
+import { version } from "../package.json";
 
 const CWD = process.cwd();
+const ENV =
+  process.env.ENVIRONMENT ??
+  process.env.ENV ??
+  process.env.NODE_ENV ??
+  "development";
 
-function getEnvFiles(cwd: string): string[] {
+function getEnvFiles(
+  cwd: string,
+  options: { cascade: boolean; findFromAncestorDirs: boolean } = {
+    cascade: true,
+    findFromAncestorDirs: true,
+  },
+): string[] {
   const envFilesQueue = [] as string[];
-  const NODE_ENV = process.env.NODE_ENV ?? "development";
-  const loadOrder = [
-    `.env.${NODE_ENV}.local`,
-    ".env.local",
-    `.env.${NODE_ENV}`,
-    ".env",
-  ];
+  const loadOrder = [`.env.${ENV}.local`, ".env.local", `.env.${ENV}`, ".env"];
   let inRoot = false;
   let searchPath: string | null = cwd;
 
@@ -30,6 +36,13 @@ function getEnvFiles(cwd: string): string[] {
         : `${searchPath}/${envFileName}`;
       if (fs.existsSync(filePath)) {
         envFilesQueue.push(filePath);
+        if (!options.cascade) {
+          break;
+        }
+
+        if (!options.findFromAncestorDirs) {
+          return envFilesQueue;
+        }
       }
     }
 
@@ -62,24 +75,51 @@ const program = new Command();
 program
   .name("WITH-ENV")
   .description("Run a command with .env files loaded")
-  .version("0.0.3", "-v, --version", "output the current version");
+  .version(version, "-v, --version", "output the current version");
 
 program
   .argument("<cmd...>")
   .option("-d, --debug", "output extra debugging logs", false)
+  .option(
+    "-c, --cascade",
+    "cascade env variables following the order .env, env.${environment}.local, .env.local, and env.${environment}.local",
+    true,
+  )
+  .option(
+    "-C, --no-cascade",
+    "don't cascade env variables following the order .env, env.${environment}.local, .env.local, and env.${environment}.local",
+  )
+  .option(
+    "-a, --ancestors-dirs",
+    "find .env files in ancestor directories",
+    true,
+  )
+  .option(
+    "-A, --no-ancestors-dirs",
+    "don't find .env files in ancestor directories",
+    true,
+  )
   .action((cmd, opts) => {
-    const envFiles = getEnvFiles(CWD);
+    if (opts.debug) {
+      console.log("Running command: ", cmd.join(" "));
+      console.log("Options: ", opts);
+    }
+
+    const envFiles = getEnvFiles(CWD, {
+      cascade: opts.cascade,
+      findFromAncestorDirs: opts.ancestorsDirs,
+    });
 
     const env = loadEnvFiles(envFiles);
 
     if (opts.debug) {
       console.log("CWD: ", CWD);
-      console.log("Loaded env files: ");
+      console.log("Loaded env files:", env.length ? "" : "none");
       for (const file of envFiles) {
         console.log(file);
       }
 
-      console.log("env parsed: ", env);
+      console.log("Env parsed: ", env);
     }
 
     Object.assign(process.env, env);
@@ -89,6 +129,10 @@ program
 
     if (!command) {
       throw new Error("No command supplied");
+    }
+
+    if (opts.debug) {
+      console.log("Command output: ");
     }
 
     childProcess.spawnSync(command, args, {
