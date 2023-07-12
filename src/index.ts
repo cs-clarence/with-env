@@ -210,6 +210,8 @@ program
         },
       );
     }
+
+    process.exit(res.status ?? 0);
   });
 
 program.parse(process.argv);
