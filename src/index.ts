@@ -197,10 +197,19 @@ program
       console.log("Command output: ");
     }
 
-    childProcess.spawnSync(command, args, {
+    const res = childProcess.spawnSync(command, args, {
       env: process.env,
       stdio: "inherit",
     });
+
+    if (res.error) {
+      throw new Error(
+        `An error occured when running the command: ${cmd.join(" ")}`,
+        {
+          cause: res.error,
+        },
+      );
+    }
   });
 
 program.parse(process.argv);
