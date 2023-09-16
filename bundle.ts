@@ -3,8 +3,9 @@ export {};
 await Bun.build({
   entrypoints: ["./src/index.ts"],
   outdir: "./dist",
-  minify: true,
+  minify: false,
   target: "node",
   format: "esm",
   splitting: true,
+  external: ["commander", "dotenv", "dotenv-expand"],
 });

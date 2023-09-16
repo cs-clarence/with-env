@@ -1,6 +1,6 @@
 {
   "name": "@rencedm112/with-env",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "Load environment variables from .env files then run a command.",
   "type": "module",
   "bin": {
@@ -19,13 +19,13 @@
     "@rencedm112/eslint-config": "^0.0.5",
     "@rencedm112/prettier-config": "^3.1.5",
     "@rencedm112/tsconfig": "^3.0.6",
+    "@commander-js/extra-typings": "^11.0.0",
     "@types/node": "^20.6.2",
     "eslint": "^8.49.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@commander-js/extra-typings": "^11.0.0",
     "commander": "^11.0.0",
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0"
