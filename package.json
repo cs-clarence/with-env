@@ -1,6 +1,6 @@
 {
   "name": "@rencedm112/with-env",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Load environment variables from .env files then run a command.",
   "type": "module",
   "bin": {
