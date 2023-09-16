@@ -195,7 +195,7 @@ program
     }
 
     {
-      let [first, ...tail] = command.split(/\w+/);
+      let [first, ...tail] = command.split(/\s+/);
 
       if (!first) {
         throw new Error("No command supplied");
