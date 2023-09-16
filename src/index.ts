@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import path from "path";
 import fs from "fs";
@@ -119,6 +119,7 @@ program
     )}, the variables in the later file override the previous ones`,
     true,
   )
+  .option("-C, --no-cascade", `disable cascade`, false)
   .option(
     "-r, --root-file-name <rootFileName>",
     "root file name",
