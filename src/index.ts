@@ -105,7 +105,7 @@ program
   .version(version, "-v, --version", "output the current version");
 
 program
-  .argument("<cmd...>")
+  .argument("<cmd>")
   .option("-d, --debug", "output extra debugging logs", false)
   .option(
     "-e, --env <env>",
@@ -154,7 +154,7 @@ program
   )
   .action((cmd, opts) => {
     if (opts.debug) {
-      console.log("Running command: ", cmd.join(" "));
+      console.log("Running command: ", cmd);
       console.log("Options: ", opts);
     }
 
@@ -185,29 +185,24 @@ program
       }
     }
 
-    const command = cmd[0];
-    const args = cmd.slice(1);
+    if (opts.debug) {
+      console.log("Command output: ");
+    }
+    let [command, ...commandArgs] = cmd.split(/\s+/);
 
     if (!command) {
       throw new Error("No command supplied");
     }
 
-    if (opts.debug) {
-      console.log("Command output: ");
-    }
-
-    const res = childProcess.spawnSync(command, args, {
+    const res = childProcess.spawnSync(command, commandArgs, {
       env: process.env,
       stdio: "inherit",
     });
 
     if (res.error) {
-      throw new Error(
-        `An error occured when running the command: ${cmd.join(" ")}`,
-        {
-          cause: res.error,
-        },
-      );
+      throw new Error(`An error occured when running the command: ${cmd}`, {
+        cause: res.error,
+      });
     }
   });
 
