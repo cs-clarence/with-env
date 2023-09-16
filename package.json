@@ -1,14 +1,14 @@
 {
   "name": "@rencedm112/with-env",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Load environment variables from .env files then run a command.",
   "type": "module",
   "bin": {
-    "with-env": "./dist/index.cjs"
+    "with-env": "./dist/index.js"
   },
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "scripts": {
-    "build": "vite build",
+    "build": "bun bundle.ts",
     "publish-package": "pnpm publish --access public",
     "build-publish": "pnpm run build && pnpm run publish-package"
   },
@@ -19,16 +19,10 @@
     "@rencedm112/eslint-config": "^0.0.5",
     "@rencedm112/prettier-config": "^3.1.5",
     "@rencedm112/tsconfig": "^3.0.6",
-    "@types/figlet": "^1.5.6",
     "@types/node": "^20.6.2",
     "eslint": "^8.49.0",
-    "npm-check-updates": "^16.14.3",
-    "pnpm": "^8.7.5",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.2",
-    "vite": "^4.4.9",
-    "vite-node": "^0.34.4",
-    "vite-tsconfig-paths": "^4.2.1"
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^11.0.0",
