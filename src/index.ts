@@ -53,10 +53,6 @@ function getEnvFiles(
     for (const envFileName of files) {
       const filePath = path.join(searchPath, envFileName);
 
-      if (import.meta.env.DEV) {
-        console.log("Searching for env file: ", filePath);
-      }
-
       if (fs.existsSync(filePath)) {
         envFilesQueue.push(filePath);
 
