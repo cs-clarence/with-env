@@ -105,7 +105,7 @@ program
   .version(version, "-v, --version", "output the current version");
 
 program
-  .argument("<cmd>")
+  .argument("<cmd...>")
   .option("-d, --debug", "output extra debugging logs", false)
   .option(
     "-e, --env <env>",
@@ -188,13 +188,28 @@ program
     if (opts.debug) {
       console.log("Command output: ");
     }
-    let [command, ...commandArgs] = cmd.split(/\s+/);
+    let [command, ...args] = cmd;
 
     if (!command) {
       throw new Error("No command supplied");
     }
 
-    const res = childProcess.spawnSync(command, commandArgs, {
+    {
+      let [first, ...tail] = command.split(/\w+/);
+
+      if (!first) {
+        throw new Error("No command supplied");
+      }
+
+      command = first;
+      args = [...tail, ...args];
+    }
+
+    if (!command) {
+      throw new Error("No command supplied");
+    }
+
+    const res = childProcess.spawnSync(command, args, {
       env: process.env,
       stdio: "inherit",
     });
