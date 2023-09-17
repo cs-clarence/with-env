@@ -22,6 +22,32 @@ function defaultFileLoadOrder<T extends string = string>(env: T) {
   return [".env", `.env.${env}`, ".env.local", `.env.${env}.local`] as const;
 }
 
+// Parse a command into an array of arguments, should respect single and double quotes
+function splitCommand(str: string): string[] {
+  const result = [] as string[];
+  let current = "";
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  for (const char of str) {
+    if (char === " " && !inSingleQuote && !inDoubleQuote) {
+      if (current) {
+        result.push(current);
+        current = "";
+      }
+    } else if (char === "'" && !inDoubleQuote) {
+      inSingleQuote = !inSingleQuote;
+    } else if (char === '"' && !inSingleQuote) {
+      inDoubleQuote = !inDoubleQuote;
+    } else {
+      current += char;
+    }
+  }
+  if (current) {
+    result.push(current);
+  }
+  return result;
+}
+
 function getEnvFiles(
   cwd: string,
   options?: Readonly<{
@@ -195,7 +221,7 @@ program
     }
 
     {
-      let [first, ...tail] = command.split(/\s+/);
+      let [first, ...tail] = splitCommand(command);
 
       if (!first) {
         throw new Error("No command supplied");
