@@ -128,7 +128,7 @@ const program = new Command();
 program
   .name("WITH-ENV")
   .description("Run a command with .env files loaded")
-  .version(version, "-v, --version", "output the current version");
+  .version(version, "-V, --version", "output the current version");
 
 program
   .argument("<cmd...>")
@@ -169,23 +169,23 @@ program
   )
   .option("-C, --no-cascade", "don't cascade env variables")
   .option(
-    "-a, --ancestors-dirs",
+    "-a, --ancestor-dirs",
     "find .env files in ancestor directories",
     true,
   )
   .option(
-    "-A, --no-ancestors-dirs",
+    "-A, --no-ancestor-dirs",
     "don't find .env files in ancestor directories",
     true,
   )
   .action((cmd, opts) => {
     if (opts.debug) {
-      console.log("Running command: ", cmd);
+      console.log("Running Command: ", cmd);
       console.log("Options: ", opts);
     }
 
     const envFiles = getEnvFiles(CWD, {
-      findFromAncestorDirs: opts.ancestorsDirs,
+      findFromAncestorDirs: opts.ancestorDirs,
       env: opts.env,
       searchPath: opts.path,
       fileNames: opts.fileNames,
@@ -197,12 +197,12 @@ program
 
     if (opts.debug) {
       console.log("CWD: ", CWD);
-      console.log("Loaded env files:", env.length ? "" : "none");
+      console.log("Loaded Env Files:", envFiles.length ? "" : "none");
       for (const file of envFiles) {
         console.log(file);
       }
 
-      console.log("Env parsed: ", env);
+      console.log("Env Parsed: ", env);
     }
 
     for (const [key, value] of Object.entries(env)) {
@@ -211,9 +211,6 @@ program
       }
     }
 
-    if (opts.debug) {
-      console.log("Command output: ");
-    }
     let [command, ...args] = cmd;
 
     if (!command) {
@@ -231,6 +228,11 @@ program
       args = [...tail, ...args];
     }
 
+    if (opts.debug) {
+      console.log("Command: ", command);
+      console.log("Args: ", args);
+    }
+
     args = args.map((a) => {
       let newArg = a;
 
@@ -241,10 +243,17 @@ program
       return newArg;
     });
 
+    if (opts.debug) {
+      console.log("Interpolated Args", args);
+    }
+
     if (!command) {
       throw new Error("No command supplied");
     }
 
+    if (opts.debug) {
+      console.log("Command output: ");
+    }
     const res = childProcess.spawnSync(command, args, {
       env: process.env,
       stdio: "inherit",
