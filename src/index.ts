@@ -205,6 +205,16 @@ program
       args = [...tail, ...args];
     }
 
+    args = args.map((a) => {
+      let newArg = a;
+
+      for (const [key, value] of Object.entries(env)) {
+        newArg = newArg.replace(`\${${key}}`, value);
+      }
+
+      return newArg;
+    });
+
     if (!command) {
       throw new Error("No command supplied");
     }
