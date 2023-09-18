@@ -260,9 +260,8 @@ program
     });
 
     if (res.error) {
-      throw new Error(`An error occured when running the command: ${cmd}`, {
-        cause: res.error,
-      });
+      console.error(res.error);
+      process.exit(res.status ?? 1);
     }
   });
 
