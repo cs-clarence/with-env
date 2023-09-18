@@ -1,10 +1,10 @@
 {
   "name": "@rencedm112/with-env",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Load environment variables from .env files then run a command.",
   "type": "module",
   "bin": {
-    "with-env": "./dist/index.js"
+    "with-env": "dist/index.js"
   },
   "main": "./dist/index.js",
   "scripts": {

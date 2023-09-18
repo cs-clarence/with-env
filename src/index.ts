@@ -51,7 +51,7 @@ function splitCommand(str: string): string[] {
 function getEnvFiles(
   cwd: string,
   options?: Readonly<{
-    findFromAncestorDirs?: boolean;
+    findFromAncestorDirs: boolean;
     env?: string;
     fileNames?: string[];
     searchPath?: string;
@@ -81,10 +81,10 @@ function getEnvFiles(
     for (const envFileName of files) {
       const filePath = path.join(searchPath, envFileName);
 
-      if (fs.existsSync(filePath)) {
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         envFilesQueue.push(filePath);
 
-        if (findFromAncestorDirs) {
+        if (!findFromAncestorDirs) {
           return envFilesQueue;
         }
       }
@@ -252,7 +252,7 @@ program
     }
 
     if (opts.debug) {
-      console.log("Command output: ");
+      console.log("Command Output: ");
     }
     const res = childProcess.spawnSync(command, args, {
       env: process.env,
