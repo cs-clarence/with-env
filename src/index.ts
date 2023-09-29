@@ -54,6 +54,7 @@ function getEnvFiles(
     findFromAncestorDirs: boolean;
     env?: string;
     fileNames?: string[];
+    filePaths?: string[];
     searchPath?: string;
     limitToProjectRoot?: boolean;
     rootFileName?: string;
@@ -68,29 +69,40 @@ function getEnvFiles(
   const rootFileName = options?.rootFileName ?? ROOT_FILE_NAME;
   const limitToProjectRoot = options?.limitToProjectRoot ?? true;
 
-  let searchPath: string | null = options?.searchPath ?? cwd;
-
-  while (!inRoot) {
-    if (
-      searchPath === "/" ||
-      (limitToProjectRoot && fs.existsSync(path.join(searchPath, rootFileName)))
-    ) {
-      inRoot = true;
-    }
-
-    for (const envFileName of files) {
-      const filePath = path.join(searchPath, envFileName);
-
+  if (options?.filePaths) {
+    for (const filePath of options.filePaths) {
       if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         envFilesQueue.push(filePath);
-
-        if (!findFromAncestorDirs) {
-          return envFilesQueue;
-        }
+      } else {
+        throw new Error(`Not a file: ${filePath}`);
       }
     }
+  } else {
+    let searchPath: string | null = options?.searchPath ?? cwd;
 
-    searchPath = path.parse(searchPath).dir;
+    while (!inRoot) {
+      if (
+        searchPath === "/" ||
+        (limitToProjectRoot &&
+          fs.existsSync(path.join(searchPath, rootFileName)))
+      ) {
+        inRoot = true;
+      }
+
+      for (const envFileName of files) {
+        const filePath = path.join(searchPath, envFileName);
+
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          envFilesQueue.push(filePath);
+
+          if (!findFromAncestorDirs) {
+            return envFilesQueue;
+          }
+        }
+      }
+
+      searchPath = path.parse(searchPath).dir;
+    }
   }
 
   return envFilesQueue;
@@ -167,6 +179,11 @@ program
     "override the names of the env files to load, cascade will apply if enabled",
     [],
   )
+  .option(
+    "-p, --file-paths <filepaths...>",
+    "use these full path to files to be loaded, overriding the default file finding algorithm, cascade will apply if enabled",
+    [],
+  )
   .option("-C, --no-cascade", "don't cascade env variables")
   .option(
     "-a, --ancestor-dirs",
@@ -189,6 +206,7 @@ program
       env: opts.env,
       searchPath: opts.path,
       fileNames: opts.fileNames,
+      filePaths: opts.filePaths,
       rootFileName: opts.rootFileName,
       limitToProjectRoot: opts.limitToProjectRoot,
     });
