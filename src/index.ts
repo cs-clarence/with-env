@@ -49,13 +49,12 @@ function splitCommand(str: string): string[] {
 }
 
 function getEnvFiles(
-  cwd: string,
+  searchPath: string,
   options?: Readonly<{
-    findFromAncestorDirs: boolean;
+    findFromAncestorDirs?: boolean;
     env?: string;
     fileNames?: string[];
     filePaths?: string[];
-    searchPath?: string;
     limitToProjectRoot?: boolean;
     rootFileName?: string;
   }>,
@@ -78,8 +77,6 @@ function getEnvFiles(
       }
     }
   } else {
-    let searchPath: string | null = options?.searchPath ?? cwd;
-
     while (!inRoot) {
       if (
         searchPath === "/" ||
@@ -173,7 +170,7 @@ program
     "ignore the project root file and search for .env files in all ancestor directories",
     true,
   )
-  .option("-p, --path <path>", "path to find .env files", CWD)
+  .option("-s, --search-path <search-path>", "path to find .env files", CWD)
   .option(
     "-f, --file-names <filenames...>",
     "override the names of the env files to load, cascade will apply if enabled",
@@ -201,10 +198,9 @@ program
       console.log("Options: ", opts);
     }
 
-    const envFiles = getEnvFiles(CWD, {
+    const envFiles = getEnvFiles(opts.searchPath, {
       findFromAncestorDirs: opts.ancestorDirs,
       env: opts.env,
-      searchPath: opts.path,
       fileNames: opts.fileNames,
       filePaths: opts.filePaths,
       rootFileName: opts.rootFileName,
