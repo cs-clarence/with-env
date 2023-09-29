@@ -9,13 +9,15 @@ import { Command } from "@commander-js/extra-typings";
 import { version } from "../package.json";
 
 const CWD = process.cwd();
-const ENV =
+const ENVIRONMENT =
   process.env.ENVIRONMENT ??
   process.env.ENV ??
   process.env.NODE_ENV ??
   "development";
 
-const FILE_LOAD_ORDER = defaultFileLoadOrder(ENV) as unknown as string[];
+const FILE_LOAD_ORDER = defaultFileLoadOrder(
+  ENVIRONMENT,
+) as unknown as string[];
 const ROOT_FILE_NAME = ".root";
 
 function defaultFileLoadOrder<T extends string = string>(env: T) {
@@ -52,7 +54,7 @@ function getEnvFiles(
   searchPath: string,
   options?: Readonly<{
     findFromAncestorDirs?: boolean;
-    env?: string;
+    environment?: string;
     fileNames?: string[] | undefined;
     filePaths?: string[] | undefined;
     limitToProjectRoot?: boolean;
@@ -62,7 +64,7 @@ function getEnvFiles(
   const envFilesQueue = [] as string[];
   let inRoot = false;
   const findFromAncestorDirs = options?.findFromAncestorDirs ?? true;
-  const env = options?.env ?? ENV;
+  const env = options?.environment ?? ENVIRONMENT;
   const fileNames = options?.fileNames ?? [];
   const files = fileNames.length !== 0 ? fileNames : defaultFileLoadOrder(env);
   const rootFileName = options?.rootFileName ?? ROOT_FILE_NAME;
@@ -143,9 +145,13 @@ program
   .argument("<cmd...>")
   .option("-d, --debug", "output extra debugging logs", false)
   .option(
-    "-e, --env <env>",
+    "--environment <env>",
     "override environment name (it uses environmental variables ENVIRONMENT or ENV or NODE_ENV or the string 'development' by default)",
-    ENV,
+    ENVIRONMENT,
+  )
+  .option(
+    "--e, --env <env...>",
+    "supply additional env variables to be loaded, in the form of KEY=VALUE",
   )
   .option(
     "-c, --cascade",
@@ -198,7 +204,7 @@ program
 
     const envFiles = getEnvFiles(opts.searchPath, {
       findFromAncestorDirs: opts.ancestorDirs,
-      env: opts.env,
+      environment: opts.environment,
       fileNames: opts.fileNames,
       filePaths: opts.filePaths,
       rootFileName: opts.rootFileName,
@@ -221,6 +227,20 @@ program
       if (!env[key] || opts.cascade) {
         process.env[key] = value;
       }
+    }
+
+    const RE = /^([A-Za-z0-9_]+)=(.*)$/;
+
+    for (const env of opts.env ?? []) {
+      const match = RE.exec(env);
+      if (!match) {
+        throw new Error(`Invalid env variable: ${env}`);
+      }
+      const [, key, value] = match;
+      if (!key) {
+        throw new Error(`Invalid env variable: ${env}`);
+      }
+      process.env[key] = value;
     }
 
     let [command, ...args] = cmd;
