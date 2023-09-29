@@ -150,7 +150,7 @@ program
     ENVIRONMENT,
   )
   .option(
-    "--e, --env <env...>",
+    "-e, --env <env...>",
     "supply additional env variables to be loaded, in the form of KEY=VALUE",
   )
   .option(
@@ -211,7 +211,7 @@ program
       limitToProjectRoot: opts.limitToProjectRoot,
     });
 
-    const env = loadEnvFiles(envFiles, opts);
+    const envs = loadEnvFiles(envFiles, opts);
 
     if (opts.debug) {
       console.log("CWD: ", CWD);
@@ -219,12 +219,10 @@ program
       for (const file of envFiles) {
         console.log(file);
       }
-
-      console.log("Env Parsed: ", env);
     }
 
-    for (const [key, value] of Object.entries(env)) {
-      if (!env[key] || opts.cascade) {
+    for (const [key, value] of Object.entries(envs)) {
+      if (!envs[key] || opts.cascade) {
         process.env[key] = value;
       }
     }
@@ -237,10 +235,12 @@ program
         throw new Error(`Invalid env variable: ${env}`);
       }
       const [, key, value] = match;
-      if (!key) {
-        throw new Error(`Invalid env variable: ${env}`);
-      }
-      process.env[key] = value;
+
+      envs[key!] = value!;
+    }
+
+    if (opts.debug) {
+      console.log("Env:", envs);
     }
 
     let [command, ...args] = cmd;
@@ -268,7 +268,7 @@ program
     args = args.map((a) => {
       let newArg = a;
 
-      for (const [key, value] of Object.entries(env)) {
+      for (const [key, value] of Object.entries(envs)) {
         newArg = newArg.replace(`\${${key}}`, value);
       }
 
