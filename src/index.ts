@@ -53,8 +53,8 @@ function getEnvFiles(
   options?: Readonly<{
     findFromAncestorDirs?: boolean;
     env?: string;
-    fileNames?: string[];
-    filePaths?: string[];
+    fileNames?: string[] | undefined;
+    filePaths?: string[] | undefined;
     limitToProjectRoot?: boolean;
     rootFileName?: string;
   }>,
@@ -68,7 +68,7 @@ function getEnvFiles(
   const rootFileName = options?.rootFileName ?? ROOT_FILE_NAME;
   const limitToProjectRoot = options?.limitToProjectRoot ?? true;
 
-  if (options?.filePaths) {
+  if (options?.filePaths && options.filePaths.length !== 0) {
     for (const filePath of options.filePaths) {
       if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         envFilesQueue.push(filePath);
@@ -174,12 +174,10 @@ program
   .option(
     "-f, --file-names <filenames...>",
     "override the names of the env files to load, cascade will apply if enabled",
-    [],
   )
   .option(
     "-p, --file-paths <filepaths...>",
     "use these full path to files to be loaded, overriding the default file finding algorithm, cascade will apply if enabled",
-    [],
   )
   .option("-C, --no-cascade", "don't cascade env variables")
   .option(
