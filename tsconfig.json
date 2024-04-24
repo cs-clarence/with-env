@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "./dist",
     "module": "ESNext",
-    "types": ["bun-types"]
+    "types": ["@types/bun"]
   }
 }

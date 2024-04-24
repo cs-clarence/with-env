@@ -20,8 +20,15 @@ const FILE_LOAD_ORDER = defaultFileLoadOrder(
 ) as unknown as string[];
 const ROOT_FILE_NAME = ".root";
 
-function defaultFileLoadOrder<T extends string = string>(env: T) {
-  return [".env", `.env.${env}`, ".env.local", `.env.${env}.local`] as const;
+function defaultFileLoadOrder<T extends string = string>(
+  env: T,
+  isPatch?: boolean,
+) {
+  if (isPatch) {
+    return [`.env.${env}`, `.env.${env}.local`] as const;
+  } else {
+    return [".env", `.env.${env}`, ".env.local", `.env.${env}.local`] as const;
+  }
 }
 
 // Parse a command into an array of arguments, should respect single and double quotes
@@ -59,6 +66,7 @@ function getEnvFiles(
     filePaths?: string[] | undefined;
     limitToProjectRoot?: boolean;
     rootFileName?: string;
+    isPatch?: boolean;
   }>,
 ): string[] {
   const envFilesQueue = [] as string[];
@@ -66,7 +74,10 @@ function getEnvFiles(
   const findFromAncestorDirs = options?.findFromAncestorDirs ?? true;
   const env = options?.environment ?? ENVIRONMENT;
   const fileNames = options?.fileNames ?? [];
-  const files = fileNames.length !== 0 ? fileNames : defaultFileLoadOrder(env);
+  const files =
+    fileNames.length !== 0
+      ? fileNames
+      : defaultFileLoadOrder(env, options?.isPatch);
   const rootFileName = options?.rootFileName ?? ROOT_FILE_NAME;
   const limitToProjectRoot = options?.limitToProjectRoot ?? true;
 
@@ -113,7 +124,7 @@ function loadEnvFiles(
 ): Record<string, string> {
   const env = {} as Record<string, string>;
 
-  for (const file of envFiles.reverse()) {
+  for (const file of envFiles) {
     const buff = fs.readFileSync(file);
 
     const parsed = dotenv.parse(buff);
@@ -125,7 +136,7 @@ function loadEnvFiles(
     }
   }
 
-  const result = dotenvExpand.expand({ parsed: env });
+  const result = dotenvExpand.expand({ parsed: env, ignoreProcessEnv: true });
 
   if (result.error) {
     throw result.error;
@@ -146,7 +157,7 @@ program
   .option("-d, --debug", "output extra debugging logs", false)
   .option(
     "--environment <env>",
-    "override environment name (it uses environmental variables ENVIRONMENT or ENV or NODE_ENV or the string 'development' by default)",
+    " CHARSET latin1 COLLATE latin1_swedish_ci AUTO_INCREMENT 5473override environment name (it uses environmental variables ENVIRONMENT or ENV or NODE_ENV or the string 'development' by default)",
     ENVIRONMENT,
   )
   .option(
@@ -196,6 +207,11 @@ program
     "don't find .env files in ancestor directories",
     true,
   )
+  .option(
+    "--patch-env <patches...>",
+    "patch these env variables into the previously loaded env files, higher priority than variables from -e",
+    [] as string[],
+  )
   .action((cmd, opts) => {
     if (opts.debug) {
       console.log("Running Command: ", cmd);
@@ -210,6 +226,19 @@ program
       rootFileName: opts.rootFileName,
       limitToProjectRoot: opts.limitToProjectRoot,
     });
+
+    for (const environment of opts.patchEnv) {
+      const files = getEnvFiles(opts.searchPath, {
+        findFromAncestorDirs: opts.ancestorDirs,
+        environment,
+        fileNames: opts.fileNames,
+        filePaths: opts.filePaths,
+        rootFileName: opts.rootFileName,
+        limitToProjectRoot: opts.limitToProjectRoot,
+        isPatch: true,
+      });
+      envFiles.push(...files);
+    }
 
     const envs = loadEnvFiles(envFiles, opts);
 
