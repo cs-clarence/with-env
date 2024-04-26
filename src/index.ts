@@ -189,11 +189,11 @@ program
   )
   .option("-s, --search-path <search-path>", "path to find .env files", CWD)
   .option(
-    "-f, --file-names <filenames...>",
+    "--file <filenames...>",
     "override the names of the env files to load, cascade will apply if enabled",
   )
   .option(
-    "-p, --file-paths <filepaths...>",
+    "--path <filepaths...>",
     "use these full path to files to be loaded, overriding the default file finding algorithm, cascade will apply if enabled",
   )
   .option("-C, --no-cascade", "don't cascade env variables")
@@ -208,7 +208,7 @@ program
     true,
   )
   .option(
-    "--patch-env <patches...>",
+    "-p, --patch <patches...>",
     "patch these env variables into the previously loaded env files, higher priority than variables from -e",
     [] as string[],
   )
@@ -221,18 +221,18 @@ program
     const envFiles = getEnvFiles(opts.searchPath, {
       findFromAncestorDirs: opts.ancestorDirs,
       environment: opts.environment,
-      fileNames: opts.fileNames,
-      filePaths: opts.filePaths,
+      fileNames: opts.file,
+      filePaths: opts.path,
       rootFileName: opts.rootFileName,
       limitToProjectRoot: opts.limitToProjectRoot,
     });
 
-    for (const environment of opts.patchEnv) {
+    for (const environment of opts.patch) {
       const files = getEnvFiles(opts.searchPath, {
         findFromAncestorDirs: opts.ancestorDirs,
         environment,
-        fileNames: opts.fileNames,
-        filePaths: opts.filePaths,
+        fileNames: opts.file,
+        filePaths: opts.path,
         rootFileName: opts.rootFileName,
         limitToProjectRoot: opts.limitToProjectRoot,
         isPatch: true,
