@@ -1,34 +1,32 @@
 {
-  "name": "@rencedm112/with-env",
-  "version": "0.0.39",
-  "description": "Load environment variables from .env files then run a command.",
-  "type": "module",
-  "bin": {
-    "with-env": "dist/index.js"
-  },
-  "main": "./dist/index.js",
-  "scripts": {
-    "build": "bun bundle.ts",
-    "publish-package": "pnpm publish --access public",
-    "build-publish": "pnpm run build && pnpm run publish-package"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@commander-js/extra-typings": "^11.0.0",
-    "@rencedm112/eslint-config": "^0.0.5",
-    "@rencedm112/prettier-config": "^3.1.5",
-    "@rencedm112/tsconfig": "^3.0.6",
-    "@types/bun": "^1.1.0",
-    "@types/node": "^20.6.2",
-    "eslint": "^8.49.0",
-    "prettier": "^3.0.3",
-    "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "commander": "^11.0.0",
-    "dotenv": "^16.3.1",
-    "dotenv-expand": "^10.0.0"
-  }
+    "name": "@rencedm112/with-env",
+    "version": "0.0.40",
+    "description": "Load environment variables from .env files then run a command.",
+    "type": "module",
+    "bin": {
+        "with-env": "dist/index.js"
+    },
+    "main": "./dist/index.js",
+    "scripts": {
+        "build": "bun bundle.ts",
+        "publish-package": "pnpm publish --access public",
+        "build-publish": "pnpm run build && pnpm run publish-package"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@biomejs/biome": "^1.9.4",
+        "@commander-js/extra-typings": "^11.0.0",
+        "@rencedm112/biome-config": "^1.0.0",
+        "@rencedm112/tsconfig": "^3.0.6",
+        "@types/bun": "^1.1.0",
+        "@types/node": "^20.6.2",
+        "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "commander": "^11.0.0",
+        "dotenv": "^16.3.1",
+        "dotenv-expand": "^10.0.0"
+    }
 }

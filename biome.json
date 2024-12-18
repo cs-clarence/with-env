@@ -1,0 +1,44 @@
+{
+    "extends": [
+        "./node_modules/@rencedm112/biome-config/formatter.json",
+        "./node_modules/@rencedm112/biome-config/linter.json",
+        "./node_modules/@rencedm112/biome-config/import-sorter.json",
+        "./node_modules/@rencedm112/biome-config/javascript.json",
+        "./node_modules/@rencedm112/biome-config/vcs.json"
+    ],
+    "files": {
+        "ignore": [
+            "**/gen/**",
+            "**/styled-system/**",
+            "**/styled-system-studio/**",
+            "**/.cache/**",
+            "**/.git/**",
+            "**/.svn/**",
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/bin/**",
+            "**/build/**",
+            "**/_build/**",
+            "**/_server/**",
+            "**/coverage/**",
+            "**/public/**",
+            "**/.next/**",
+            "**/out/**",
+            "**/output/**",
+            "**/.output/**",
+            "**/.obj/**",
+            "**/.turbo/**",
+            "**/turbo.lock",
+            "**/yarn.lock",
+            "**/package-lock.json",
+            "**/pnpm-lock.yaml",
+            "**/pnpm-workspace.yaml",
+            "**/yarn-error.log",
+            "**/lerna.json",
+            "**/tsconfig.json",
+            "**/tsconfig.tsbuildinfo",
+            "**/*.tsbuildinfo",
+            "**/*.config.js"
+        ]
+    }
+}

@@ -2,4 +2,7 @@ src
 vite.config.ts
 tsconfig.json
 prettier.config.cjs
+biome.json
 .eslintrc.cjs
+.env*
+.root
