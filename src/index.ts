@@ -186,11 +186,6 @@ addOptions(
     stdout.write(env[key] ?? "");
 });
 
-program
-    .name("WITH-ENV")
-    .description("Run a command with .env files loaded")
-    .version(version, "-V, --version", "output the current version");
-
 addOptions(
     program
         .command("print")
@@ -337,7 +332,6 @@ function addOptions<
             "--path <filepaths...>",
             "use these full path to files to be loaded, overriding the default file finding algorithm, cascade will apply if enabled",
         )
-        .option("-C, --no-cascade", "don't cascade env variables")
         .option(
             "-a, --ancestor-dirs",
             "find .env files in ancestor directories",
