@@ -9,6 +9,8 @@ import dotenvExpand from "dotenv-expand";
 import { Command, type OptionValues } from "@commander-js/extra-typings";
 import { version } from "../package.json";
 
+const processEnv = structuredClone(process.env);
+
 type CommonOptions = {
     debug: boolean;
     environment: string;
@@ -21,6 +23,7 @@ type CommonOptions = {
     path?: string[];
     ancestorDirs: boolean;
     patch: string[];
+    includeProcessEnv?: boolean;
 };
 
 const CWD = process.cwd();
@@ -183,12 +186,39 @@ addOptions(
     stdout.write(env[key] ?? "");
 });
 
-addOptions(program.argument("<cmd...>")).action((cmd, opts) => {
+program
+    .name("WITH-ENV")
+    .description("Run a command with .env files loaded")
+    .version(version, "-V, --version", "output the current version");
+
+addOptions(
+    program
+        .command("print")
+        .description("Print the value of an env variable into stdout")
+        .argument("<keys...>"),
+).action((keys, opts) => {
     if (opts.debug) {
-        console.log("Running Command: ", cmd);
+        console.log("Getting Env Var: ", keys);
         console.log("Options: ", opts);
     }
 
+    const env = getFinalEnvVars(opts, { loadIntoProcessEnv: false });
+
+    for (const k of keys) {
+        stdout.write(`${k}=${env[k] ?? ""}\n`);
+    }
+});
+
+addOptions(
+    program.command("print-all").description("Print all env vars"),
+).action((opts) => {
+    const env = getFinalEnvVars(opts, { loadIntoProcessEnv: false });
+    for (const [key, value] of Object.entries(env)) {
+        stdout.write(`${key}=${value}\n`);
+    }
+});
+
+addOptions(program.argument("<cmd...>")).action((cmd, opts) => {
     const envs = getFinalEnvVars(opts);
 
     if (opts.debug) {
@@ -221,7 +251,13 @@ addOptions(program.argument("<cmd...>")).action((cmd, opts) => {
         let newArg = a;
 
         for (const [key, value] of Object.entries(envs)) {
-            newArg = newArg.replace(`\${${key}}`, value);
+            if (newArg.includes(`\${${key}}`)) {
+                newArg = newArg.replace(`\${${key}}`, value);
+            }
+
+            if (newArg.includes(`\$${key}`)) {
+                newArg = newArg.replace(`\$${key}`, value);
+            }
         }
 
         return newArg;
@@ -258,7 +294,7 @@ function addOptions<
         .option("-d, --debug", "output extra debugging logs", false)
         .option(
             "--environment <env>",
-            " CHARSET latin1 COLLATE latin1_swedish_ci AUTO_INCREMENT 5473override environment name (it uses environmental variables ENVIRONMENT or ENV or NODE_ENV or the string 'development' by default)",
+            "override environment name (it uses environmental variables ENVIRONMENT or ENV or NODE_ENV or the string 'development' by default)",
             ENVIRONMENT,
         )
         .option(
@@ -267,7 +303,7 @@ function addOptions<
         )
         .option(
             "-c, --cascade",
-            `cascade env variables following the order: ${FILE_LOAD_ORDER.join(
+            `sascade env variables following the order: ${FILE_LOAD_ORDER.join(
                 ",",
             )}, the variables in the later file override the previous ones`,
             true,
@@ -314,8 +350,18 @@ function addOptions<
         )
         .option(
             "-p, --patch <patches...>",
-            "patch these env variables into the previously loaded env files, higher priority than variables from -e",
+            "patch these env from these files into the previously loaded env files, higher priority than variables from -e",
             [] as string[],
+        )
+        .option(
+            "-i, --include-process-env",
+            "Include variables from process.env",
+            false,
+        )
+        .option(
+            "-I, --no-include-process-env",
+            "Don't include variables from process.env",
+            true,
         );
 }
 
@@ -327,6 +373,10 @@ function getFinalEnvVars(
     cliOptions: CommonOptions,
     options: GetEnvVarOptions = { loadIntoProcessEnv: true },
 ) {
+    if (cliOptions.debug) {
+        console.log("CLI Options: ", cliOptions);
+        console.log("Options: ", options);
+    }
     const envFiles = getEnvFiles(cliOptions.searchPath, {
         findFromAncestorDirs: cliOptions.ancestorDirs,
         environment: cliOptions.environment,
@@ -337,7 +387,7 @@ function getFinalEnvVars(
     });
 
     for (const environment of cliOptions.patch) {
-        const files = getEnvFiles(cliOptions.searchPath, {
+        const files = getEnvFiles(environment, {
             findFromAncestorDirs: cliOptions.ancestorDirs,
             environment,
             fileNames: cliOptions.file,
@@ -359,14 +409,6 @@ function getFinalEnvVars(
         }
     }
 
-    if (options.loadIntoProcessEnv) {
-        for (const [key, value] of Object.entries(envMap)) {
-            if (!process.env[key] || cliOptions.cascade) {
-                process.env[key] = value;
-            }
-        }
-    }
-
     const RE = /^([A-Za-z0-9_]+)=(.*)$/;
 
     for (const env of cliOptions.env ?? []) {
@@ -380,7 +422,32 @@ function getFinalEnvVars(
         envMap[key!] = value!;
     }
 
+    if (cliOptions.includeProcessEnv) {
+        if (cliOptions.debug) {
+            console.log("Including Process Env");
+        }
+        for (const [key, value] of Object.entries(processEnv)) {
+            if (!envMap[key] || !cliOptions.cascade) {
+                envMap[key] = value ?? "";
+
+                if (cliOptions.debug) {
+                    console.log(`Process Env: ${key}=${value}`);
+                }
+            }
+        }
+    }
+
+    if (options.loadIntoProcessEnv) {
+        for (const [key, value] of Object.entries(envMap)) {
+            if (!process.env[key] || cliOptions.cascade) {
+                process.env[key] = value;
+            }
+        }
+    }
+
     return envMap;
 }
+
+program.enablePositionalOptions();
 
 program.parse(process.argv);
