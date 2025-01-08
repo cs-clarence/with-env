@@ -154,7 +154,10 @@ function loadEnvFiles(
         }
     }
 
-    const result = dotenvExpand.expand({ parsed: env, ignoreProcessEnv: true });
+    const result = dotenvExpand.expand({
+        parsed: env,
+        processEnv: processEnv as Record<string, string>,
+    });
 
     if (result.error) {
         throw result.error;
@@ -380,18 +383,17 @@ function getFinalEnvVars(
         limitToProjectRoot: cliOptions.limitToProjectRoot,
     });
 
-    for (const environment of cliOptions.patch) {
-        const files = getEnvFiles(environment, {
+    envFiles.push(
+        ...getEnvFiles(cliOptions.searchPath, {
             findFromAncestorDirs: cliOptions.ancestorDirs,
-            environment,
-            fileNames: cliOptions.file,
+            environment: cliOptions.environment,
+            fileNames: cliOptions.patch,
             filePaths: cliOptions.path,
             rootFileName: cliOptions.rootFileName,
             limitToProjectRoot: cliOptions.limitToProjectRoot,
             isPatch: true,
-        });
-        envFiles.push(...files);
-    }
+        }),
+    );
 
     const envMap = loadEnvFiles(envFiles, cliOptions);
 
@@ -442,6 +444,4 @@ function getFinalEnvVars(
     return envMap;
 }
 
-program.enablePositionalOptions();
-
-program.parse(process.argv);
+program.enablePositionalOptions().parse(process.argv);
